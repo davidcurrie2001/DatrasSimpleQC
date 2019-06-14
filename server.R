@@ -35,4 +35,36 @@ shinyServer(function(input, output) {
     
   })
   
+  output$thirdPlot <- renderPlot({
+    
+    dd <- subset(d,Species==input$species)
+    CA <- dd[["CA"]]
+
+    attach(CA)
+    
+    exponential.model <- lm(log(IndWgt)~ log(LngtClas))
+    #summary(exponential.model)
+    
+    lenvalues <- seq(min(LngtClas), max(LngtClas), 10)
+    WeightsModelled <- exp(predict(exponential.model, list(LngtClas=lenvalues)))
+    
+    WeightModel <- exp(predict(exponential.model, LngtClas=LngtClas))
+    CA$Diffs <- abs(IndWgt - WeightModel)
+    
+    detach(CA)
+    
+    IQRMutiplier = 3
+    
+    outliers <- CA[CA$Diffs > median(CA$Diffs) + IQRMutiplier*IQR(CA$Diffs),]
+    
+    
+    plot(CA$LngtClas,CA$IndWgt,xlab="Length class (mm)",ylab="Weight (g)")
+    points(outliers$LngtClas,outliers$IndWgt,col="red")
+    lines(lenvalues,WeightsModelled,type="l",col="blue")
+    
+    
+    
+  })
+  
+  
 })
