@@ -20,6 +20,20 @@ library(plotly)
 shinyServer(function(input, output, session) {
   
   
+  filteredFile <- "data/filteredData.rds"
+  
+  if (file.exists(filteredFile)){
+    d <- readRDS(filteredFile)
+    
+  } else {
+    
+    d <- readExchange("data/Exchange.zip")
+  }
+  #head(d[["CA"]])
+  #d <- readExchange("data/Exchange.zip")
+  #speciesNames <- aggregate(RecordType ~ ScientificName_WoRMS, data = d[["CA"]], FUN = "length")
+  #speciesList <- speciesNames[order(-speciesNames$RecordType)  , "ScientificName_WoRMS"]
+  
 
   output$mainPlot <- renderPlotly({
     
@@ -27,6 +41,16 @@ shinyServer(function(input, output, session) {
     #CA <- dd[["CA"]]
     
     CA <- d[["CA"]]
+    
+    PlotTitle <- ""
+    
+    # get the title for the plot
+    SpeciesNames <- unique(as.character(CA[,"ScientificName_WoRMS"]))
+    if (length(SpeciesNames)> 1){
+      PlotTitle <- "Multiple species"
+    } else {
+      PlotTitle<-SpeciesNames
+    }
     
     attach(CA)
     
@@ -52,7 +76,9 @@ shinyServer(function(input, output, session) {
     #  add_trace(data = outliers, x = ~LngtClas, y = ~IndWgt, type="scatter", name = 'Outliers', mode = "markers", marker=list(color="red", size=7))
     p <- plot_ly(x = lenvalues, y = WeightsModelled, type="scatter",mode = "lines", name = 'Fit') %>%
       add_trace(data = CA, x = ~LngtClas, y = ~IndWgt, type="scatter", name = 'Data', mode = "markers", marker=list(color="black", size=3)) %>%
-      add_trace(data = outliers, x = ~LngtClas, y = ~IndWgt, type="scatter", name = 'Outliers', mode = "markers", marker=list(color="rgba(255, 182, 193, .9)'", size=7, line=list(color="rgba(152, 0, 0, .8)", width=2)))
+      add_trace(data = outliers, x = ~LngtClas, y = ~IndWgt, type="scatter", name = 'Outliers', mode = "markers", marker=list(color="rgba(255, 182, 193, .9)'", size=7, line=list(color="rgba(152, 0, 0, .8)", width=2))) %>%
+      layout(title = PlotTitle, xaxis = list(title = 'Length Class'),yaxis = list(title = 'Weight'))
+    
     #points(outliers$LngtClas,outliers$IndWgt,col="red")
     #identify(outliers$LngtClas,outliers$IndWgt)
     #lines(lenvalues,WeightsModelled,type="l",col="blue")
