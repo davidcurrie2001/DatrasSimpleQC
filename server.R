@@ -22,13 +22,31 @@ shinyServer(function(input, output, session) {
   
   filteredFile <- "data/filteredData.rds"
   
-  if (file.exists(filteredFile)){
-    d <- readRDS(filteredFile)
-    
-  } else {
-    
-    d <- readExchange("data/Exchange.zip")
-  }
+  # if (file.exists(filteredFile)){
+  #   d <- readRDS(filteredFile)
+  #   
+  # } else {
+  #   
+  #   d <- readExchange("data/Exchange.zip")
+  # }
+  
+  # Use reactive poll so that our data will be updated when the data/filteredData.rds is updated
+  d <- reactivePoll(1000, session,
+                       # This function returns the time that log_file was last modified
+                       checkFunc = function() {
+                         if (file.exists(filteredFile))
+                           file.info(filteredFile)$mtime[1]
+                         else
+                           ""
+                       },
+                       # This function returns the content of log_file
+                       valueFunc = function() {
+                         #read.csv(log_file)
+                         readRDS(filteredFile)
+                       }
+  )
+  
+  
   #head(d[["CA"]])
   #d <- readExchange("data/Exchange.zip")
   #speciesNames <- aggregate(RecordType ~ ScientificName_WoRMS, data = d[["CA"]], FUN = "length")
@@ -40,7 +58,7 @@ shinyServer(function(input, output, session) {
     #dd <- subset(d,Species==input$species)
     #CA <- dd[["CA"]]
     
-    CA <- d[["CA"]]
+    CA <- d()[["CA"]]
     
     PlotTitle <- ""
     
