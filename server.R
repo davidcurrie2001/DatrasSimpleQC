@@ -23,8 +23,10 @@ shinyServer(function(input, output, session) {
 
   output$mainPlot <- renderPlotly({
     
-    dd <- subset(d,Species==input$species)
-    CA <- dd[["CA"]]
+    #dd <- subset(d,Species==input$species)
+    #CA <- dd[["CA"]]
+    
+    CA <- d[["CA"]]
     
     attach(CA)
     

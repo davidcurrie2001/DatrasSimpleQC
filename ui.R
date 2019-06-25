@@ -16,18 +16,22 @@ shinyUI(fluidPage(
   # Application title
   titlePanel("Simple DATRAS QC"),
   
+  fluidRow(
+    column(12,plotlyOutput("mainPlot"))
+  )
+  
   # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
+  #sidebarLayout(
+    #sidebarPanel(
       #selectInput("species","Select a species",choices= c("Gadus morhua","Melanogrammus aeglefinus"))
-      selectInput("species","Select a species",choices= speciesList)
-    ),
+      #selectInput("species","Select a species",choices= speciesList)
+    #),
     
     # Show a plot of the generated distribution
-    mainPanel(
-      plotlyOutput("mainPlot")
-       ,plotOutput("secondPlot")
-       ,plotOutput("thirdPlot")
-    )
-  )
+    #mainPanel(
+      #plotlyOutput("mainPlot")
+      # ,plotOutput("secondPlot")
+      # ,plotOutput("thirdPlot")
+    #)
+  #)
 ))
