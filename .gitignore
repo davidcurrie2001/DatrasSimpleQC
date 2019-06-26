@@ -39,3 +39,4 @@ rsconnect/
 *.bat
 *.db
 *.rds
+*.csv
