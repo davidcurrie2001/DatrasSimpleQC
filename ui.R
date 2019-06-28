@@ -20,18 +20,5 @@ shinyUI(fluidPage(
     column(12,plotlyOutput("mainPlot"))
   )
   
-  # Sidebar with a slider input for number of bins 
-  #sidebarLayout(
-    #sidebarPanel(
-      #selectInput("species","Select a species",choices= c("Gadus morhua","Melanogrammus aeglefinus"))
-      #selectInput("species","Select a species",choices= speciesList)
-    #),
-    
-    # Show a plot of the generated distribution
-    #mainPanel(
-      #plotlyOutput("mainPlot")
-      # ,plotOutput("secondPlot")
-      # ,plotOutput("thirdPlot")
-    #)
-  #)
+
 ))

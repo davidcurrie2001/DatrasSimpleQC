@@ -13,6 +13,61 @@ library(maps)
 library(mapdata)
 library(plotly)
 
+
+DefaultText <- "Any"
+
+# Use the filters on the data supplied
+FilterData<-function(allData,filtersToUse){
+  
+  # Filter the data using the selected values
+  filteredData <- allData
+  
+  if ("Survey" %in% colnames(filtersToUse)){
+    selectedSurvey <- as.character(filtersToUse$Survey)
+    if (selectedSurvey != DefaultText){
+      filteredData <- subset.DATRASraw(filteredData, Survey==selectedSurvey)
+    }
+  }
+  
+  if ("Year" %in% colnames(filtersToUse)){
+    selectedYear <- as.character(filtersToUse$Year)
+    if (selectedYear != DefaultText){
+      filteredData <- subset.DATRASraw(filteredData, Year==selectedYear)
+    }
+  }
+  
+  if ("Quarter" %in% colnames(filtersToUse)){
+    selectedQuarter <- as.character(filtersToUse$Quarter)
+    if (selectedQuarter != DefaultText){
+      filteredData <- subset.DATRASraw(filteredData, Quarter==selectedQuarter)
+    }
+  }
+  
+  if ("HaulNo" %in% colnames(filtersToUse)){
+    selectedHaul <- as.character(filtersToUse$HaulNo)
+    if (selectedHaul != DefaultText){
+      filteredData <- subset.DATRASraw(filteredData, HaulNo==selectedHaul)
+    }
+  }
+  
+  if ("ScientificName_WoRMS" %in% colnames(filtersToUse)){
+    selectedSpecies <- as.character(filtersToUse$ScientificName_WoRMS)
+    if (selectedSpecies != DefaultText){
+      filteredData <- subset.DATRASraw(filteredData, ScientificName_WoRMS==selectedSpecies)
+    }
+  }
+  
+  if ("Sex" %in% colnames(filtersToUse)){
+    selectedSex <- as.character(filtersToUse$Sex)
+    if (selectedSex != DefaultText){
+      filteredData <- subset.DATRASraw(filteredData, Sex==selectedSex)
+    }
+  }
+  
+  filteredData
+  
+}
+
 # File names
 
 AllDataFile <- "data/DATRAS_Exchange_Data.csv"
@@ -51,13 +106,19 @@ shinyServer(function(input, output, session) {
                         allData <- ''
                         filters <- ''
                           if (file.exists(AllDataFile)) {
-                             allData <- readICES("data/DATRAS_Exchange_Data.csv" ,strict=TRUE)
-                          } else if (file.exists(myFilters)){
-                             filters <- read.csv(myFilters)
+                             allData <- readICES(AllDataFile ,strict=TRUE)
+                          } 
+                          if (file.exists(myFilters)){
+                             filters <- read.csv(myFilters, header = TRUE)
                           }
                         list(allData,filters)
                        }
   )
+  
+  #allData <- readICES(AllDataFile ,strict=TRUE)
+  #filters <- read.csv(myFilters, header = TRUE)
+  
+  #DataAndFilters <- list(allData,filters)
   
   
   #head(d[["CA"]])
@@ -71,24 +132,44 @@ shinyServer(function(input, output, session) {
     #dd <- subset(d,Species==input$species)
     #CA <- dd[["CA"]]
     
-    d <-DataAndFilters()[1]
-    f <-DataAndFilters()[2]
+    d <-DataAndFilters()[[1]]
+    f <-DataAndFilters()[[2]]
+    
+    #d <-DataAndFilters[[1]]
+    #f <-DataAndFilters[[2]]
 
-    CA <- d[["CA"]]
+    dataToUse <- FilterData(d,f)
+    
+    #head(f)
+    
+    filterString <- ''
+    
+    # Get all the filter values
+    for (i in colnames(f)){
+      if (i!='X'){
+        filterString <- paste(filterString,i,":", f[[i]], ",", sep ="" )
+      }
+    }
+    print(filterString)  
+    
+    
+    CA <- dataToUse[["CA"]]
     
     PlotTitle <- ""
     
     # get the title for the plot
     SpeciesNames <- unique(as.character(CA[,"ScientificName_WoRMS"]))
+    #print(SpeciesNames)
     if (length(SpeciesNames)> 1){
       PlotTitle <- "Multiple species"
     } else {
       PlotTitle<-SpeciesNames
     }
     
-    # Only try and plot the chart if we have lengths and weights
-    if (sum(is.na(CA$IndWgt)) >0 && sum(is.na(CA$LngtClas)) >0 ) {
-    
+    # Only try and plot the chart if we have single species with lengths and weights
+    #if (PlotTitle!="Multiple species" &&  sum(!is.na(CA$IndWgt)) >0 && sum(!is.na(CA$LngtClas)) >0 ) {
+    if (sum(!is.na(CA$IndWgt)) >0 && sum(!is.na(CA$LngtClas)) >0 ) {
+        
       attach(CA)
       
       exponential.model <- lm(log(IndWgt)~ log(LngtClas))
@@ -122,7 +203,8 @@ shinyServer(function(input, output, session) {
     
     } else {
       
-      p<- plotly_empty()
+      p<- plotly_empty()  %>%
+        layout(title = PlotTitle, xaxis = list(title = 'Length Class'),yaxis = list(title = 'Weight'))
     }
     
   })
