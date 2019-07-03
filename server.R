@@ -7,86 +7,10 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
-library(DATRAS)
-library(maps)
-library(mapdata)
-library(plotly)
 
-
-DefaultText <- "Any"
-
-# Use the filters on the data supplied
-FilterData<-function(allData,filtersToUse){
-  
-  # Filter the data using the selected values
-  filteredData <- allData
-  
-  if ("Survey" %in% colnames(filtersToUse)){
-    selectedSurvey <- as.character(filtersToUse$Survey)
-    if (selectedSurvey != DefaultText){
-      filteredData <- subset.DATRASraw(filteredData, Survey==selectedSurvey)
-    }
-  }
-  
-  if ("Year" %in% colnames(filtersToUse)){
-    selectedYear <- as.character(filtersToUse$Year)
-    if (selectedYear != DefaultText){
-      filteredData <- subset.DATRASraw(filteredData, Year==selectedYear)
-    }
-  }
-  
-  if ("Quarter" %in% colnames(filtersToUse)){
-    selectedQuarter <- as.character(filtersToUse$Quarter)
-    if (selectedQuarter != DefaultText){
-      filteredData <- subset.DATRASraw(filteredData, Quarter==selectedQuarter)
-    }
-  }
-  
-  if ("HaulNo" %in% colnames(filtersToUse)){
-    selectedHaul <- as.character(filtersToUse$HaulNo)
-    if (selectedHaul != DefaultText){
-      filteredData <- subset.DATRASraw(filteredData, HaulNo==selectedHaul)
-    }
-  }
-  
-  if ("ScientificName_WoRMS" %in% colnames(filtersToUse)){
-    selectedSpecies <- as.character(filtersToUse$ScientificName_WoRMS)
-    if (selectedSpecies != DefaultText){
-      filteredData <- subset.DATRASraw(filteredData, ScientificName_WoRMS==selectedSpecies)
-    }
-  }
-  
-  if ("Sex" %in% colnames(filtersToUse)){
-    selectedSex <- as.character(filtersToUse$Sex)
-    if (selectedSex != DefaultText){
-      filteredData <- subset.DATRASraw(filteredData, Sex==selectedSex)
-    }
-  }
-  
-  filteredData
-  
-}
-
-# File names
-
-AllDataFile <- "data/DATRAS_Exchange_Data.csv"
-filteredFile <- "data/filteredData.rds"
-myFilters <- "data/myFilters.csv"
-
-
-# Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
 
-  # if (file.exists(filteredFile)){
-  #   d <- readRDS(filteredFile)
-  #   
-  # } else {
-  #   
-  #   d <- readExchange("data/Exchange.zip")
-  # }
-  
   # Use reactive poll so that our data will be updated when the data/filteredData.rds is updated
   DataAndFilters <- reactivePoll(1000, session,
                        # This function returns the time that files were last modified
@@ -102,7 +26,7 @@ shinyServer(function(input, output, session) {
                        },
                        # This function returns the content the files
                        valueFunc = function() {
-                         print('Loading data')
+                        #print('Loading data')
                         allData <- ''
                         filters <- ''
                           if (file.exists(AllDataFile)) {
@@ -115,32 +39,14 @@ shinyServer(function(input, output, session) {
                        }
   )
   
-  #allData <- readICES(AllDataFile ,strict=TRUE)
-  #filters <- read.csv(myFilters, header = TRUE)
-  
-  #DataAndFilters <- list(allData,filters)
-  
-  
-  #head(d[["CA"]])
-  #d <- readExchange("data/Exchange.zip")
-  #speciesNames <- aggregate(RecordType ~ ScientificName_WoRMS, data = d[["CA"]], FUN = "length")
-  #speciesList <- speciesNames[order(-speciesNames$RecordType)  , "ScientificName_WoRMS"]
-  
 
   output$mainPlot <- renderPlotly({
     
-    #dd <- subset(d,Species==input$species)
-    #CA <- dd[["CA"]]
-    
+
     d <-DataAndFilters()[[1]]
     f <-DataAndFilters()[[2]]
     
-    #d <-DataAndFilters[[1]]
-    #f <-DataAndFilters[[2]]
-
     dataToUse <- FilterData(d,f)
-    
-    #head(f)
     
     filterString <- ''
     
@@ -151,8 +57,7 @@ shinyServer(function(input, output, session) {
       }
     }
     print(filterString)  
-    
-    
+  
     CA <- dataToUse[["CA"]]
     
     PlotTitle <- ""
