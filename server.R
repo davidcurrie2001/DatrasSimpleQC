@@ -114,22 +114,5 @@ shinyServer(function(input, output, session) {
     
   })
   
-  output$secondPlot <- renderPlot({
-    
-    dd <- subset(d,Species==input$species)
-    dd <- addSpectrum(dd)
-    plot(dd,col="red")
-    
-  })
-  
-  output$thirdPlot <- renderPlot({
-    
-    dd <- subset(d,Species==input$species)
-    dd <- addSpectrum(dd)
-    dd <- addWeightByHaul(dd)
-    bubblePlot(dd)
-    
-  })
-  
-  
+
 })

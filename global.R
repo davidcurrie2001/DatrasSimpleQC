@@ -1,7 +1,5 @@
 library(shiny)
 library(DATRAS)
-library(maps)
-library(mapdata)
 library(plotly)
 
 DefaultText <- "Any"
