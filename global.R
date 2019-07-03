@@ -35,7 +35,7 @@ filterDataByParameter <- function(dataToFilter,filtersToUse,paramName){
     if (selectedValue != DefaultText){
       
       conditionToCheck <- paste("dataToReturn <- subset.DATRASraw(dataToFilter,",paramName,"=='",selectedValue, "')",sep = "")
-      print(conditionToCheck)
+      #print(conditionToCheck)
       # Need to use eval and parse so we can dynamically build the command, otherwise the values passed to ... in the subset.DATRASraw 
       # function will be taken literally
       eval(parse(text=conditionToCheck))
