@@ -14,13 +14,57 @@ shinyServer(function(input, output, session) {
   ## STANDARD REACTIVE DATRAS DATA START
   
   # Use reactive poll so that our data will be updated when the data/filteredData.rds is updated
-  DataAndFilters <- reactivePoll(1000, session,
+  # DataAndFilters <- reactivePoll(1000, session,
+  #                                # This function returns the time that files were last modified
+  #                                checkFunc = function() {
+  #                                  myValue <- ''
+  #                                  if (file.exists(AllDataFile)) {
+  #                                    myValue <- paste(myValue , file.info(AllDataFile)$mtime[1])
+  #                                  }
+  #                                  if (file.exists(myFilters)) {
+  #                                    myValue <- paste(myValue , file.info(myFilters)$mtime[1])
+  #                                  }
+  #                                  myValue
+  #                                },
+  #                                # This function returns the content the files
+  #                                valueFunc = function() {
+  #                                  #print('Loading data')
+  #                                  allData <- ''
+  #                                  filters <- ''
+  #                                  if (file.exists(AllDataFile)) {
+  #                                    allData <- readICES(AllDataFile ,strict=TRUE)
+  #                                  }
+  #                                  if (file.exists(myFilters)){
+  #                                    filters <- read.csv(myFilters, header = TRUE)
+  #                                  }
+  #                                  list(allData,filters)
+  #                                }
+  # )
+  
+  datrasData <- reactivePoll(1000, session,
                                  # This function returns the time that files were last modified
                                  checkFunc = function() {
                                    myValue <- ''
                                    if (file.exists(AllDataFile)) {
                                      myValue <- paste(myValue , file.info(AllDataFile)$mtime[1])
                                    }
+                                   myValue
+                                 },
+                                 # This function returns the content the files
+                                 valueFunc = function() {
+                                   #print('Loading data')
+                                   allData <- ''
+                                   if (file.exists(AllDataFile)) {
+                                     allData <- readICES(AllDataFile ,strict=TRUE)
+                                   }
+                                   allData
+                                 }
+  )
+  
+  datrasFilters <- reactivePoll(1000, session,
+                                 # This function returns the time that files were last modified
+                                 checkFunc = function() {
+                                   myValue <- ''
                                    if (file.exists(myFilters)) {
                                      myValue <- paste(myValue , file.info(myFilters)$mtime[1])
                                    }
@@ -29,15 +73,11 @@ shinyServer(function(input, output, session) {
                                  # This function returns the content the files
                                  valueFunc = function() {
                                    #print('Loading data')
-                                   allData <- ''
                                    filters <- ''
-                                   if (file.exists(AllDataFile)) {
-                                     allData <- readICES(AllDataFile ,strict=TRUE)
-                                   }
                                    if (file.exists(myFilters)){
                                      filters <- read.csv(myFilters, header = TRUE)
                                    }
-                                   list(allData,filters)
+                                   filters
                                  }
   )
   
@@ -45,8 +85,11 @@ shinyServer(function(input, output, session) {
   # Reactive data
   myData<- reactive({
     
-    d <-DataAndFilters()[[1]]
-    f <-DataAndFilters()[[2]]
+    #d <-DataAndFilters()[[1]]
+    #f <-DataAndFilters()[[2]]
+    
+    d <- datrasData()
+    f <- datrasFilters()
     
     dataToUse <- FilterData(d,f)
     
@@ -55,7 +98,9 @@ shinyServer(function(input, output, session) {
   # Unfiltered data
   myUnfilteredData<- reactive({
     
-    d <-DataAndFilters()[[1]]
+    #d <-DataAndFilters()[[1]]
+    
+    d <- datrasData()
     
   })
   
@@ -98,13 +143,11 @@ shinyServer(function(input, output, session) {
   ## STANDARD REACTIVE DATRAS DATA END
   
   
+  # Simple Length - Weight plot showing outliers
   output$mainPlot <- renderPlotly({
     
-
-    d <-DataAndFilters()[[1]]
-    f <-DataAndFilters()[[2]]
     
-    dataToUse <- FilterData(d,f)
+    f<- datrasFilters()
     
     filterString <- ''
     
