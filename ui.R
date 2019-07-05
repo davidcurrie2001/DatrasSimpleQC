@@ -12,7 +12,7 @@
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Simple DATRAS QC"),
+  #titlePanel("Simple DATRAS QC"),
   
   fluidRow(
     column(12,plotlyOutput("mainPlot"))
